@@ -704,6 +704,9 @@
       document.getElementById("noticiaEtiqueta").textContent = data.etiqueta;
       document.getElementById("noticiaTitulo").textContent = data.titulo;
       document.getElementById("noticiaBajada").textContent = data.bajada;
+      document.getElementById("claveAlcance").textContent = data.etiqueta.split("·")[0].trim();
+      document.getElementById("claveFoco").textContent = data.cards[1].titulo;
+      document.getElementById("claveContraste").textContent = `${data.cards[0].label} / ${data.cards[2].label}`;
       document.getElementById("label1").textContent = data.cards[0].label;
       document.getElementById("titulo1").textContent = data.cards[0].titulo;
       document.getElementById("texto1").textContent = data.cards[0].texto;
@@ -715,6 +718,7 @@
       document.getElementById("texto3").textContent = data.cards[2].texto;
       videosGrid.innerHTML = "";
       videosGrid.classList.toggle("hidden", data.videos.length === 0);
+      document.getElementById("videosHeading")?.classList.toggle("hidden", data.videos.length === 0);
       data.videos.forEach((video, index) => {
         const card = document.createElement("a");
         card.className = "video-card";
@@ -741,7 +745,51 @@
         card.appendChild(title);
         videosGrid.appendChild(card);
       });
+      renderTeasers(scheme);
       renderComentarios(scheme);
+    }
+
+    function renderTeasers(scheme) {
+      const data = noticias[scheme];
+      if (!data) return;
+      
+      const teasersContainer = document.querySelector(".category-teasers");
+      if (!teasersContainer) return;
+      
+      const teaserCards = teasersContainer.querySelectorAll(".teaser-card");
+      
+      teaserCards.forEach((card, index) => {
+        const isVideo = index % 3 === 1;
+        
+        if (isVideo) {
+          const videoIndex = index === 1 ? 0 : 1;
+          if (data.videos[videoIndex]) {
+            const video = data.videos[videoIndex];
+            card.classList.remove("teaser-text");
+            card.classList.add("teaser-video");
+            card.innerHTML = `
+              <span>Video</span>
+              <h3>${video.title}</h3>
+              <p>Material audiovisual relacionado con el tema</p>
+            `;
+          }
+        } else {
+          let cardIndex;
+          if (index === 0) cardIndex = 0;
+          else if (index === 2) cardIndex = 1;
+          else if (index === 3) cardIndex = 2;
+          else cardIndex = 0;
+          
+          const cardData = data.cards[cardIndex];
+          card.classList.remove("teaser-video");
+          card.classList.add("teaser-text");
+          card.innerHTML = `
+            <span>${cardData.label}</span>
+            <h3>${cardData.titulo}</h3>
+            <p>${cardData.texto.substring(0, 120)}...</p>
+          `;
+        }
+      });
     }
 
     function getScope() {
@@ -764,6 +812,7 @@
         value
       }));
       updateScopeStatus();
+      updateScopeChip();
     }
 
     function updateScopeStatus() {
@@ -773,10 +822,28 @@
         status = document.createElement("p");
         status.className = "scope-status";
         status.id = "scopeStatus";
-        noticiaSection.prepend(status);
       }
+      const header = noticiaSection.querySelector(".noticia-header");
+      if (header && status.parentElement !== header) header.prepend(status);
       const scope = getScope();
       status.textContent = `Viendo: ${scope.label}`;
+    }
+
+    function updateScopeChip() {
+      const nav = document.querySelector(".color-controls");
+      if (!nav) return;
+      let chip = document.getElementById("scopeChip");
+      if (!chip) {
+        chip = document.createElement("button");
+        chip.className = "scope-chip";
+        chip.id = "scopeChip";
+        chip.type = "button";
+        chip.addEventListener("click", () => {
+          toggleAdjusterBtn?.click();
+        });
+        nav.insertBefore(chip, document.getElementById("personalizarWrapper"));
+      }
+      chip.textContent = getScope().label;
     }
 
     function restoreScopeSelection() {
@@ -809,9 +876,27 @@
         return;
       }
       comentarios.forEach((comentario) => {
-        const item = document.createElement("p");
+        const normalized = typeof comentario === "string" ? {
+          name: "Anónimo",
+          text: comentario,
+          date: null
+        } : comentario;
+        const item = document.createElement("article");
         item.className = "comentario-item";
-        item.textContent = comentario;
+        const date = normalized.date ? new Date(normalized.date).toLocaleString("es-CO", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }) : "Sin fecha";
+        const meta = document.createElement("div");
+        meta.className = "comentario-meta";
+        const author = document.createElement("strong");
+        author.textContent = normalized.name || "Anónimo";
+        const time = document.createElement("span");
+        time.textContent = date;
+        const text = document.createElement("p");
+        text.textContent = normalized.text;
+        meta.append(author, time);
+        item.append(meta, text);
         comentariosList.appendChild(item);
       });
     }
@@ -840,8 +925,11 @@
     const noticiaSection = document.getElementById("noticiaSection");
     const comentarioForm = document.getElementById("comentarioForm");
     const comentarioTexto = document.getElementById("comentarioTexto");
+    const comentarioNombre = document.getElementById("comentarioNombre");
     const searchForm = document.getElementById("searchForm");
     const searchInput = document.getElementById("searchInput");
+    const navBar = document.querySelector(".color-controls");
+    const navMenuToggle = document.getElementById("navMenuToggle");
     const currentPage = document.body.dataset.page || "inicio";
     const pageScheme = pageSchemes[currentPage] || null;
 
@@ -918,7 +1006,15 @@
 
     colorButtons.forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.route === currentPage);
+      btn.toggleAttribute("aria-current", btn.dataset.route === currentPage);
     });
+
+    if (navBar && navMenuToggle) {
+      navMenuToggle.addEventListener("click", () => {
+        const isOpen = navBar.classList.toggle("menu-open");
+        navMenuToggle.setAttribute("aria-expanded", String(isOpen));
+      });
+    }
 
     if (searchForm && searchInput) {
       searchForm.addEventListener("submit", (event) => {
@@ -926,6 +1022,20 @@
         const query = searchInput.value.trim();
         if (!query) return;
         renderSearchResults(query);
+      });
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.trim();
+        if (query.length < 2) {
+          document.getElementById("searchPanel")?.classList.add("hidden");
+          return;
+        }
+        renderSearchResults(query);
+      });
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          searchInput.value = "";
+          document.getElementById("searchPanel")?.classList.add("hidden");
+        }
       });
     }
 
@@ -938,6 +1048,7 @@
       app.setColorScheme(1);
     }
     restoreScopeSelection();
+    updateScopeChip();
 
     if (comentarioForm && comentarioTexto) {
       comentarioForm.addEventListener("submit", (event) => {
@@ -945,10 +1056,16 @@
         if (!currentSection) return;
         const text = comentarioTexto.value.trim();
         if (!text) return;
+        const name = comentarioNombre?.value.trim() || "Anónimo";
         const comentarios = getComentarios(currentSection);
-        comentarios.unshift(text);
+        comentarios.unshift({
+          name,
+          text,
+          date: new Date().toISOString()
+        });
         localStorage.setItem(`comentarios-${currentSection}`, JSON.stringify(comentarios));
         comentarioTexto.value = "";
+        if (comentarioNombre) comentarioNombre.value = "";
         renderComentarios(currentSection);
       });
     }

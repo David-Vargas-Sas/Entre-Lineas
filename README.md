@@ -1,6 +1,6 @@
 # Entre Líneas
 
-Sitio interactivo editorial con fondo WebGL, navegación por categorías, buscador, videos, comentarios locales y filtro de cercanía.
+Sitio interactivo editorial con fondo WebGL, navegación por categorías, buscador, videos, comentarios locales y Filtros de cercanía.
 
 ## Páginas
 
