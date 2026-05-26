@@ -1,8 +1,8 @@
-# Entre L&iacute;neas
+# Entre Líneas
 
-Sitio interactivo con fondo WebGL, categorias de noticias y panel de cercania.
+Sitio interactivo editorial con fondo WebGL, navegación por categorías, buscador, videos, comentarios locales y filtro de cercanía.
 
-Paginas:
+## Páginas
 
 - `src/index.html`
 - `src/politica.html`
@@ -11,4 +11,24 @@ Paginas:
 - `src/cultura.html`
 - `src/educacion.html`
 
-Abre `src/index.html` durante desarrollo o `dist/index.html` para la version distribuible.
+## Desarrollo
+
+Edita los archivos dentro de `src`.
+
+Para probarlo localmente, abre `src/index.html` o levanta un servidor estático desde la carpeta `src`.
+
+## Distribución
+
+La carpeta `dist` contiene la versión publicable. El workflow de GitHub Pages copia `src` dentro de `dist` antes de desplegar, así que puedes seguir trabajando normalmente en `src`.
+
+## GitHub Pages
+
+1. Sube el repositorio a GitHub.
+2. Entra a `Settings > Pages`.
+3. En `Build and deployment`, selecciona `GitHub Actions`.
+4. Haz push a `main` o `master`.
+5. Revisa la pestaña `Actions` hasta que termine `Deploy GitHub Pages`.
+
+La URL final tendrá este formato:
+
+`https://TU_USUARIO.github.io/NOMBRE_DEL_REPOSITORIO/`
