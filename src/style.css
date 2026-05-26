@@ -555,6 +555,7 @@
       width: min(1180px, calc(100% - 4rem));
       margin: 1.8rem auto 0;
       pointer-events: auto;
+      overflow: hidden;
     }
 
     .teaser-card {
@@ -587,11 +588,11 @@
     .teaser-card:nth-child(2) {
       border-top-color: rgba(255, 255, 255, 0.65);
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(15, 18, 33, 0.5)), rgba(15, 18, 33, 0.68);
-      transform: translateY(-8px);
+      transform: translateY(-4px);
     }
 
     .teaser-card:nth-child(2):hover {
-      transform: translateY(-13px);
+      transform: translateY(-6px);
     }
 
     .teaser-card:nth-child(5) {
