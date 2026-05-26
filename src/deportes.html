@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Entre L&iacute;neas</title>
+  <meta name="description" content="Entre Lineas: contexto, criterio y miradas sobre noticias de politica, deportes, economia, cultura y educacion.">
+  <title>Deportes | Entre L&iacute;neas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +30,10 @@
       <a class="color-btn" href="./economia.html" data-route="economia">Econom&iacute;a</a>
       <a class="color-btn" href="./cultura.html" data-route="cultura">Cultura</a>
       <a class="color-btn" href="./educacion.html" data-route="educacion">Educaci&oacute;n</a>
-    </nav>
+      <form class="search-form" id="searchForm" role="search">
+        <input id="searchInput" type="search" placeholder="Buscar temas" autocomplete="off" aria-label="Buscar temas">
+        <button type="submit">Buscar</button>
+      </form>    </nav>
 
     <div class="personalizar-wrapper" id="personalizarWrapper">
       <button class="toggle-adjuster-btn" id="toggleAdjusterBtn" type="button">Personalizar</button>
@@ -47,7 +51,7 @@
 
           <div class="location-item">
             <button class="location-option" type="button" data-toggle="ciudad">
-              Ciudad <span class="location-arrow" id="arrow-ciudad" aria-hidden="true">v</span>
+              Ciudad <span class="location-arrow" id="arrow-ciudad" aria-hidden="true">⌄</span>
             </button>
             <div class="location-submenu" id="sub-ciudad">
               <button class="submenu-item" type="button" data-value="bogota">Bogot&aacute;</button>
@@ -63,7 +67,7 @@
 
           <div class="location-item">
             <button class="location-option" type="button" data-toggle="region">
-              Regionales <span class="location-arrow" id="arrow-region" aria-hidden="true">v</span>
+              Regionales <span class="location-arrow" id="arrow-region" aria-hidden="true">⌄</span>
             </button>
             <div class="location-submenu" id="sub-region">
               <button class="submenu-item" type="button" data-value="andina">Regi&oacute;n Andina</button>
@@ -77,7 +81,7 @@
 
           <div class="location-item">
             <button class="location-option" type="button" data-toggle="continente">
-              Continente <span class="location-arrow" id="arrow-continente" aria-hidden="true">v</span>
+              Continente <span class="location-arrow" id="arrow-continente" aria-hidden="true">⌄</span>
             </button>
             <div class="location-submenu" id="sub-continente">
               <button class="submenu-item" type="button" data-value="america-sur">Am&eacute;rica del Sur</button>
@@ -92,7 +96,7 @@
 
           <div class="location-item">
             <button class="location-option" type="button" data-toggle="pais">
-              Pa&iacute;s <span class="location-arrow" id="arrow-pais" aria-hidden="true">v</span>
+              Pa&iacute;s <span class="location-arrow" id="arrow-pais" aria-hidden="true">⌄</span>
             </button>
             <div class="location-submenu" id="sub-pais">
               <button class="submenu-item" type="button" data-value="colombia">Colombia</button>
@@ -158,4 +162,8 @@
 </body>
 
 </html>
+
+
+
+
 

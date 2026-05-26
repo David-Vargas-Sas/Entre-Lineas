@@ -700,6 +700,7 @@
       const data = noticias[scheme];
       if (!data) return;
       const videosGrid = document.getElementById("videosGrid");
+      updateScopeStatus();
       document.getElementById("noticiaEtiqueta").textContent = data.etiqueta;
       document.getElementById("noticiaTitulo").textContent = data.titulo;
       document.getElementById("noticiaBajada").textContent = data.bajada;
@@ -743,6 +744,50 @@
       renderComentarios(scheme);
     }
 
+    function getScope() {
+      try {
+        return JSON.parse(localStorage.getItem("entre-lineas-scope")) || {
+          label: "General",
+          value: "general"
+        };
+      } catch {
+        return {
+          label: "General",
+          value: "general"
+        };
+      }
+    }
+
+    function saveScope(label, value) {
+      localStorage.setItem("entre-lineas-scope", JSON.stringify({
+        label,
+        value
+      }));
+      updateScopeStatus();
+    }
+
+    function updateScopeStatus() {
+      if (!noticiaSection) return;
+      let status = document.getElementById("scopeStatus");
+      if (!status) {
+        status = document.createElement("p");
+        status.className = "scope-status";
+        status.id = "scopeStatus";
+        noticiaSection.prepend(status);
+      }
+      const scope = getScope();
+      status.textContent = `Viendo: ${scope.label}`;
+    }
+
+    function restoreScopeSelection() {
+      const scope = getScope();
+      document.querySelectorAll(".submenu-item, [data-level]").forEach((item) => {
+        const itemValue = item.dataset.value || item.dataset.level;
+        item.classList.toggle("selected", itemValue === scope.value);
+        item.classList.toggle("active", itemValue === scope.value);
+      });
+    }
+
     function getComentarios(scheme) {
       const raw = localStorage.getItem(`comentarios-${scheme}`);
       try {
@@ -779,18 +824,110 @@
       cultura: 4,
       educacion: 5
     };
+    const pageHrefs = {
+      politica: "./politica.html",
+      deportes: "./deportes.html",
+      economia: "./economia.html",
+      cultura: "./cultura.html",
+      educacion: "./educacion.html"
+    };
+    const schemePages = Object.fromEntries(
+      Object.entries(pageSchemes).map(([page, scheme]) => [scheme, page])
+    );
 
     // Navegacion y pagina actual
     const colorButtons = document.querySelectorAll(".color-btn");
     const noticiaSection = document.getElementById("noticiaSection");
     const comentarioForm = document.getElementById("comentarioForm");
     const comentarioTexto = document.getElementById("comentarioTexto");
+    const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("searchInput");
     const currentPage = document.body.dataset.page || "inicio";
     const pageScheme = pageSchemes[currentPage] || null;
+
+    function normalizeText(text) {
+      return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function getSearchResults(query) {
+      const normalizedQuery = normalizeText(query);
+      return Object.entries(noticias)
+        .map(([scheme, data]) => {
+          const searchable = [
+            data.etiqueta,
+            data.titulo,
+            data.bajada,
+            ...data.cards.flatMap((card) => [card.label, card.titulo, card.texto])
+          ].join(" ");
+          return {
+            scheme: Number(scheme),
+            data,
+            matches: normalizeText(searchable).includes(normalizedQuery)
+          };
+        })
+        .filter((result) => result.matches);
+    }
+
+    function ensureSearchPanel() {
+      let panel = document.getElementById("searchPanel");
+      if (panel) return panel;
+      panel = document.createElement("section");
+      panel.className = "search-panel hidden";
+      panel.id = "searchPanel";
+      panel.setAttribute("aria-live", "polite");
+      panel.innerHTML = `
+        <div class="search-panel-head">
+          <h2>Resultados</h2>
+          <button class="search-panel-close" type="button" aria-label="Cerrar resultados">&times;</button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      `;
+      document.body.appendChild(panel);
+      panel.querySelector(".search-panel-close").addEventListener("click", () => {
+        panel.classList.add("hidden");
+      });
+      return panel;
+    }
+
+    function renderSearchResults(query) {
+      const panel = ensureSearchPanel();
+      const resultsBox = document.getElementById("searchResults");
+      const results = getSearchResults(query);
+      resultsBox.innerHTML = "";
+      if (!results.length) {
+        resultsBox.innerHTML = `<p class="search-empty">No encontramos resultados para "${query}".</p>`;
+      } else {
+        results.forEach(({ scheme, data }) => {
+          const page = schemePages[scheme];
+          const link = document.createElement("a");
+          link.className = "search-result";
+          link.href = pageHrefs[page];
+          link.innerHTML = `
+            <span>${data.etiqueta}</span>
+            <strong>${data.titulo}</strong>
+            <small>${data.bajada}</small>
+          `;
+          resultsBox.appendChild(link);
+        });
+      }
+      panel.classList.remove("hidden");
+    }
 
     colorButtons.forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.route === currentPage);
     });
+
+    if (searchForm && searchInput) {
+      searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const query = searchInput.value.trim();
+        if (!query) return;
+        renderSearchResults(query);
+      });
+    }
 
     if (pageScheme && noticiaSection) {
       currentSection = pageScheme;
@@ -800,6 +937,7 @@
     } else if (app) {
       app.setColorScheme(1);
     }
+    restoreScopeSelection();
 
     if (comentarioForm && comentarioTexto) {
       comentarioForm.addEventListener("submit", (event) => {
@@ -857,6 +995,7 @@
         const parent = item.closest(".location-submenu");
         parent.querySelectorAll(".submenu-item").forEach((i) => i.classList.remove("selected"));
         item.classList.add("selected");
+        saveScope(item.textContent.trim(), item.dataset.value);
       });
     });
     // Opciones sin submenu
@@ -871,6 +1010,7 @@
         // Marca como activo
         document.querySelectorAll(".location-option").forEach((o) => o.classList.remove("active"));
         opt.classList.add("active");
+        saveScope(opt.textContent.trim(), opt.dataset.level);
       });
     });
     // Custom cursor
